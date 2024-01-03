@@ -1,6 +1,4 @@
-﻿import { map } from "./map/map";
-
-interface Collision {
+﻿interface Collision {
   x: number;
   y: number;
   width: number;
