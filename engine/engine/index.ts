@@ -49,8 +49,8 @@ interface AnimatedCharacter extends Character {
   currentFrame: number;
 }
 
-interface ImageMap {
-  [key: number]: string; // Mapping of values to image paths
+interface ImageMap<T = string> {
+  [key: number]: T;
 }
 
 // Add this enum for different user actions
@@ -244,6 +244,7 @@ function applyCameraTransform(ctx: CanvasRenderingContext2D) {
   );
 }
 
+
 export function renderScene(
   tileSize: number,
   col: number,
@@ -252,12 +253,17 @@ export function renderScene(
   imageMap: ImageMap,
   map: number[][],
   characters: Character[]
-) {
+  ) {
   const ctx = component.getContext("2d");
 
   if (ctx) {
-    // Clear the entire canvas before rendering
-    ctx.clearRect(0, 0, component.width, component.height);
+    // Clear the region affected by camera movement
+    ctx.clearRect(
+      currentCamera.x,
+      currentCamera.y,
+      component.width / currentCamera.zoom,
+      component.height / currentCamera.zoom
+      );
 
     // Save the current transformation state
     ctx.save();
@@ -268,24 +274,20 @@ export function renderScene(
     // Draw the grid/map
     placeGrid(tileSize, col, row, 1, component, imageMap, map);
 
+    // Pre-load character images
+    const characterImages: Record<string, HTMLImageElement> = {};
+    characters.forEach((character) => {
+      if (!characterImages[character.imagePath]) {
+        const img = new Image();
+        img.src = character.imagePath;
+        characterImages[character.imagePath] = img;
+      }
+    });
+
     // Draw the characters
     for (const character of characters) {
-      const img = new Image();
-      img.src = character.imagePath;
-
-      img.onload = function () {
-        ctx.drawImage(
-          img,
-          character.x * tileSize,
-          character.y * tileSize,
-          tileSize,
-          tileSize
-        );
-      };
-
-      img.onerror = function () {
-        console.error("Error loading character image:", img.src);
-      };
+      const img = characterImages[character.imagePath];
+      ctx.drawImage(img, character.x * tileSize, character.y * tileSize, tileSize, tileSize);
     }
 
     // Restore the transformation state
