@@ -257,43 +257,40 @@ export function renderScene(
   const ctx = component.getContext("2d");
 
   if (ctx) {
-    // Clear the region affected by camera movement
-    ctx.clearRect(
-      currentCamera.x,
-      currentCamera.y,
-      component.width / currentCamera.zoom,
-      component.height / currentCamera.zoom
-      );
-
     // Save the current transformation state
     ctx.save();
 
     // Apply the camera transformation
     applyCameraTransform(ctx);
 
-    // Draw the grid/map
-    placeGrid(tileSize, col, row, 1, component, imageMap, map);
-
-    // Pre-load character images
-    const characterImages: Record<string, HTMLImageElement> = {};
-    characters.forEach((character) => {
-      if (!characterImages[character.imagePath]) {
-        const img = new Image();
-        img.src = character.imagePath;
-        characterImages[character.imagePath] = img;
-      }
-    });
-
     // Draw the characters
     for (const character of characters) {
-      const img = characterImages[character.imagePath];
-      ctx.drawImage(img, character.x * tileSize, character.y * tileSize, tileSize, tileSize);
+      const img = new Image();
+      img.src = character.imagePath;
+
+      img.onload = function () {
+        ctx.drawImage(
+          img,
+          character.x * tileSize,
+          character.y * tileSize,
+          tileSize,
+          tileSize
+          );
+      };
+
+      img.onerror = function () {
+        console.error("Error loading character image:", img.src);
+      };
     }
+
+    // Draw the particles
+    renderParticles(component);
 
     // Restore the transformation state
     ctx.restore();
   }
 }
+
 
 export async function addAnimatedCharacter(
   id: number,

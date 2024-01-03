@@ -95,16 +95,16 @@ function moveAndSummonParticles(newX: number, newY: number) {
     moveCharacter(1, tileSize, newX, newY, appCanvas.value, imageMap, characters, map);
 
     // Set the camera position based on the player's new position
-    setCameraPosition(character, tileSize, appCanvas.value);
+    //setCameraPosition(character, tileSize, appCanvas.value);
 
     // Zoom the camera (if needed)
-    zoomCamera(2); // Adjust the zoom factor as needed
+    //zoomCamera(2); // Adjust the zoom factor as needed
 
     // Render the scene with the updated camera position
     renderScene(tileSize, col, row, appCanvas.value, imageMap, map, characters);
 
     // Reset the camera position and factor
-    resetCamera();
+    //resetCamera();
 
     // Move and summon particles at the new position
     summonParticles(newX * tileSize, newY * tileSize, 20, 5, 'rgba(255, 255, 255, 0.7)');
