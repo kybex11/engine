@@ -20,6 +20,8 @@ interface Particle {
     x: number;
     y: number;
   };
+  lifespan: number;
+  age: number;
 }
 
 const defaultCamera: Camera = {
@@ -430,7 +432,7 @@ export function summonParticles(
   count: number,
   maxSize: number,
   color: string
-) {
+  ) {
   for (let i = 0; i < count; i++) {
     const particle: Particle = {
       x,
@@ -438,15 +440,18 @@ export function summonParticles(
       size: Math.random() * maxSize,
       color,
       velocity: {
-        x: (Math.random() - 0.5) * 2, // Random horizontal velocity
-        y: Math.random() * -2, // Random vertical velocity (upward)
+        x: (Math.random() - 0.5) * 2,
+        y: Math.random() * -2,
       },
+      lifespan: 100, // Adjust the lifespan as needed (in frames)
+      age: 0,
     };
 
     particles.push(particle);
   }
 }
 
+// Modify the updateParticles function to handle particle lifespan and fading
 export function updateParticles() {
   for (let i = particles.length - 1; i >= 0; i--) {
     const particle = particles[i];
@@ -455,14 +460,21 @@ export function updateParticles() {
     particle.x += particle.velocity.x;
     particle.y += particle.velocity.y;
 
-    particle.size *= 0.95;
+    // Update particle age
+    particle.age++;
 
-    if (particle.size <= 1) {
+    // Fade out the particle based on its age and lifespan
+    const alpha = 1 - particle.age / particle.lifespan;
+    particle.color = `rgba(255, 255, 255, ${alpha})`;
+
+    // Remove particles that have reached the end of their lifespan
+    if (particle.age >= particle.lifespan || particle.size <= 1) {
       particles.splice(i, 1);
     }
   }
 }
 
+// Modify the renderParticles function to draw particles with the updated color
 export function renderParticles(component: HTMLCanvasElement) {
   const ctx = component.getContext("2d");
   for (const particle of particles) {
@@ -474,6 +486,7 @@ export function renderParticles(component: HTMLCanvasElement) {
     }
   }
 }
+
 
 let animationId: any;
 export function animateParticles(canvas: HTMLCanvasElement) {
