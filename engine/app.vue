@@ -32,8 +32,8 @@ interface CanvasWithMap extends HTMLCanvasElement {
   map?: number[][];
 }
 
-const col = 5;
-const row = 5;
+const col = 10;
+const row = 10;
 
 let characters: Character[] = [];
 let map: number[][] = [];
@@ -106,11 +106,13 @@ async function moveAndSummonParticles(newX: number, newY: number) {
     // Render the scene with the updated camera position
     renderScene(tileSize, col, row, appCanvas.value, imageMap, map, characters);
 
+    // Prepairing map to render with camera switch coord
+
     // Calculate the boundaries for rendering (5x5 grid around the character)
-    const renderStartX = Math.max(0, character.x - 2); // Adjust the number of tiles based on your preference
-    const renderStartY = Math.max(0, character.y - 2);
-    const renderEndX = Math.min(map[0].length - 1, character.x + 2);
-    const renderEndY = Math.min(map.length - 1, character.y + 2);
+    const renderStartX = Math.max(0, character.x - Math.floor(col / 2)); // Adjust the number of tiles based on your preference
+    const renderStartY = Math.max(0, character.y - Math.floor(row / 2));
+    const renderEndX = Math.min(map[0].length - 1, character.x + Math.floor(col / 2));
+    const renderEndY = Math.min(map.length - 1, character.y + Math.floor(row / 2));
 
     // Render only the portion of the map around the character
     placeGrid(
