@@ -30,24 +30,43 @@ interface Character {
 const col = 10;
 const row = 10;
 
+let characters: Character[] = [];
+let map: number[][] = [];
+
 const appCanvas = ref<HTMLCanvasElement | null>(null);
 
 const imageMap = {
   0: '/red.png',
-  1: '/blue.png',
+
 };
 
-const characters: Character[] = [];
-const map = generateMap(col, row, 0, 1);
-
-const tileSize = 100;
+const tileSize = 90;
 
 onMounted(() => {
-  if (appCanvas.value instanceof HTMLCanvasElement) {
+  // Проверка на наличие сохраненных данных
+  const savedCharacters = localStorage.getItem('characters');
+  const savedMap = localStorage.getItem('map');
+
+  if (savedCharacters) {
+    characters = JSON.parse(savedCharacters);
+  }
+
+  if (savedMap) {
+    map = JSON.parse(savedMap);
+  } else {
+    // Если данных в localStorage нет, генерируем новую карту
+    map = generateMap(col, row, 0, 1);
+    localStorage.setItem('map', JSON.stringify(map));
+  }
+
+  if (appCanvas.value) {
     initializeEngine(tileSize, col, row, appCanvas.value);
     placeGrid(tileSize, col, row, 1, appCanvas.value, imageMap, map);
 
-    addCharacter(1, tileSize, 2, 3, '/character.png', appCanvas.value, characters);
+    // Восстановление персонажей
+    characters.forEach((character) => {
+      addCharacter(character.id, tileSize, character.x, character.y, character.imagePath, appCanvas.value, characters);
+    });
 
     // Listen for keydown event
     window.addEventListener('keydown', handleKeyDown);
@@ -55,8 +74,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Cleanup: remove event listener when component is unmounted
-  window.removeEventListener('keydown', handleKeyDown);
+  // Перед выходом со страницы сохраняем данные в localStorage
+  localStorage.setItem('characters', JSON.stringify(characters));
+  localStorage.setItem('map', JSON.stringify(map));
 });
 
 function handleKeyDown(event: KeyboardEvent) {

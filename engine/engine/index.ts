@@ -174,24 +174,30 @@ export async function moveCharacter(
   imageMap: ImageMap,
   characters: Character[],
   map: number[][]
-) {
+  ) {
   const ctx = component.getContext("2d");
 
   if (ctx) {
     const character = characters.find((char) => char.id === id);
 
     if (character) {
+      // Log the current character position before moving
+      console.log('Before Move - Character Position:', { x: character.x, y: character.y });
+
       // Clear the previous position by clearing the entire area
       ctx.clearRect(
         character.x * tileSize,
         character.y * tileSize,
         tileSize,
         tileSize
-      );
+        );
 
       // Update character position
       character.x = newX;
       character.y = newY;
+
+      // Log the new character position after moving
+      console.log('After Move - Character Position:', { x: character.x, y: character.y });
 
       // Draw the map again to refresh it
       placeGrid(tileSize, 10, 10, 1, component, imageMap, map);
@@ -202,6 +208,7 @@ export async function moveCharacter(
     }
   }
 }
+
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -259,6 +266,9 @@ export function renderScene(
   const ctx = component.getContext("2d");
 
   if (ctx) {
+    // Log the current camera position
+    console.log('Current Camera Position:', { x: currentCamera.x, y: currentCamera.y });
+
     // Save the current transformation state
     ctx.save();
 
@@ -267,6 +277,9 @@ export function renderScene(
 
     // Draw the characters
     for (const character of characters) {
+      // Log the character position before drawing
+      console.log('Character Position (Before Drawing):', { x: character.x, y: character.y });
+
       const img = new Image();
       img.src = character.imagePath;
 
