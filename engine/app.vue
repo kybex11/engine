@@ -43,12 +43,13 @@ const appCanvas = ref<CanvasWithMap>(null!);
 const imageMap = {
   0: '/red.png',
   1: '/blue.png',
+  2: '/oak.png',
 };
 
 const tileSize = 90;
 
 onMounted(() => {
-  map = generateMap(20, 20, 0, 1);
+  map = generateMap(20, 20, 0, 2);
   if (appCanvas.value) {
     initializeEngine(tileSize, col, row, appCanvas.value);
     placeGrid(tileSize, col, row, 1, appCanvas.value, imageMap, map);
