@@ -27,56 +27,40 @@ interface Character {
   imagePath: string;
 }
 
+interface CanvasWithMap extends HTMLCanvasElement {
+  map?: number[][];
+}
+
 const col = 10;
 const row = 10;
 
 let characters: Character[] = [];
 let map: number[][] = [];
 
-const appCanvas = ref<HTMLCanvasElement | null>(null);
+const appCanvas = ref<CanvasWithMap>(null!);
 
 const imageMap = {
   0: '/red.png',
-
+  1: '/blue.png',
 };
 
 const tileSize = 90;
 
 onMounted(() => {
-  // Проверка на наличие сохраненных данных
-  const savedCharacters = localStorage.getItem('characters');
-  const savedMap = localStorage.getItem('map');
-
-  if (savedCharacters) {
-    characters = JSON.parse(savedCharacters);
-  }
-
-  if (savedMap) {
-    map = JSON.parse(savedMap);
-  } else {
-    // Если данных в localStorage нет, генерируем новую карту
-    map = generateMap(col, row, 0, 1);
-    localStorage.setItem('map', JSON.stringify(map));
-  }
-
+  map = generateMap(col, row, 0, 1);
   if (appCanvas.value) {
     initializeEngine(tileSize, col, row, appCanvas.value);
     placeGrid(tileSize, col, row, 1, appCanvas.value, imageMap, map);
 
-    // Восстановление персонажей
-    characters.forEach((character) => {
-      addCharacter(character.id, tileSize, character.x, character.y, character.imagePath, appCanvas.value, characters);
-    });
-
-    // Listen for keydown event
+    const character: Character = { id: 1, x: 0, y: 0, imagePath: '/character.png' };
+    addCharacter(character.id, tileSize, character.x, character.y, character.imagePath, appCanvas.value, characters);
     window.addEventListener('keydown', handleKeyDown);
   }
 });
 
 onUnmounted(() => {
-  // Перед выходом со страницы сохраняем данные в localStorage
-  localStorage.setItem('characters', JSON.stringify(characters));
-  localStorage.setItem('map', JSON.stringify(map));
+  // Clean up any resources or event listeners when the component is unmounted
+  window.removeEventListener('keydown', handleKeyDown);
 });
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -115,16 +99,16 @@ function moveAndSummonParticles(newX: number, newY: number) {
     moveCharacter(1, tileSize, newX, newY, appCanvas.value, imageMap, characters, map);
 
     // Set the camera position based on the player's new position
-    //setCameraPosition(character, tileSize, appCanvas.value);
+    // setCameraPosition(character, tileSize, appCanvas.value);
 
     // Zoom the camera (if needed)
-    //zoomCamera(2); // Adjust the zoom factor as needed
+    // zoomCamera(2); // Adjust the zoom factor as needed
 
     // Render the scene with the updated camera position
     renderScene(tileSize, col, row, appCanvas.value, imageMap, map, characters);
 
     // Reset the camera position and factor
-    //resetCamera();
+    // resetCamera();
 
     // Move and summon particles at the new position
     summonParticles(newX * tileSize, newY * tileSize, 20, 5, 'rgba(255, 255, 255, 0.7)');
