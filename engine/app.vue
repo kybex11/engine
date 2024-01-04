@@ -11,6 +11,7 @@ import {
   moveCharacter,
   setCameraPosition,
   zoomCamera,
+  loadEngineTypeImage,
   renderScene,
   addAnimatedCharacter,
   generateMap,
@@ -31,8 +32,8 @@ interface CanvasWithMap extends HTMLCanvasElement {
   map?: number[][];
 }
 
-const col = 10;
-const row = 10;
+const col = 5;
+const row = 5;
 
 let characters: Character[] = [];
 let map: number[][] = [];
@@ -47,7 +48,7 @@ const imageMap = {
 const tileSize = 90;
 
 onMounted(() => {
-  map = generateMap(col, row, 0, 1);
+  map = generateMap(20, 20, 0, 1);
   if (appCanvas.value) {
     initializeEngine(tileSize, col, row, appCanvas.value);
     placeGrid(tileSize, col, row, 1, appCanvas.value, imageMap, map);
@@ -87,7 +88,7 @@ function handleKeyDown(event: KeyboardEvent) {
   }
 }
 
-function moveAndSummonParticles(newX: number, newY: number) {
+async function moveAndSummonParticles(newX: number, newY: number) {
   const character = characters.find((char) => char.id === 1);
 
   if (character && appCanvas.value instanceof HTMLCanvasElement) {
@@ -96,19 +97,35 @@ function moveAndSummonParticles(newX: number, newY: number) {
     const tempCharacterY = character.y;
 
     // Move the character
-    moveCharacter(1, tileSize, newX, newY, appCanvas.value, imageMap, characters, map);
+    await moveCharacter(1, tileSize, newX, newY, appCanvas.value, imageMap, characters, map);
 
     // Set the camera position based on the player's new position
-    // setCameraPosition(character, tileSize, appCanvas.value);
-
-    // Zoom the camera (if needed)
-    // zoomCamera(2); // Adjust the zoom factor as needed
+    setCameraPosition(character, tileSize, appCanvas.value);
 
     // Render the scene with the updated camera position
     renderScene(tileSize, col, row, appCanvas.value, imageMap, map, characters);
 
-    // Reset the camera position and factor
-    // resetCamera();
+    // Calculate the boundaries for rendering (5x5 grid around the character)
+    const renderStartX = Math.max(0, character.x - 2); // Adjust the number of tiles based on your preference
+    const renderStartY = Math.max(0, character.y - 2);
+    const renderEndX = Math.min(map[0].length - 1, character.x + 2);
+    const renderEndY = Math.min(map.length - 1, character.y + 2);
+
+    // Render only the portion of the map around the character
+    placeGrid(
+      tileSize,
+      renderEndX - renderStartX + 1,
+      renderEndY - renderStartY + 1,
+      1,
+      appCanvas.value,
+      imageMap,
+      map.slice(renderStartY, renderEndY + 1).map((row) => row.slice(renderStartX, renderEndX + 1))
+    );
+
+    // Draw the character at the new position
+    const img = await loadEngineTypeImage(character.imagePath);
+    const ctx = appCanvas.value.getContext("2d");
+    ctx?.drawImage(img, character.x * tileSize, character.y * tileSize, tileSize, tileSize);
 
     // Move and summon particles at the new position
     summonParticles(newX * tileSize, newY * tileSize, 20, 5, 'rgba(255, 255, 255, 0.7)');
@@ -120,6 +137,7 @@ function moveAndSummonParticles(newX: number, newY: number) {
     animateParticles(appCanvas.value);
   }
 }
+
 </script>
 
 <style>

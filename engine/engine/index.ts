@@ -223,15 +223,26 @@ export function setCameraPosition(
   player: Character,
   tileSize: number,
   component: CanvasWithMap
-) {
-  const centerX = (player.x + 0.5) * tileSize;
-  const centerY = (player.y + 0.5) * tileSize;
+  ) {
+  const canvasWidth = component.width;
+  const canvasHeight = component.height;
 
-  const cameraX = centerX - component.width / 2;
-  const cameraY = centerY - component.height / 2;
+  // Calculate the center of the canvas
+  const centerX = canvasWidth / 2;
+  const centerY = canvasHeight / 2;
 
-  currentCamera.x = cameraX;
-  currentCamera.y = cameraY;
+  // Calculate the player's position in pixels
+  const playerX = player.x * tileSize + tileSize / 2;
+  const playerY = player.y * tileSize + tileSize / 2;
+
+  // Set the camera position based on the player's position
+  currentCamera.x = playerX - centerX;
+  currentCamera.y = playerY - centerY;
+
+  // Ensure the camera stays within the bounds of the map
+  currentCamera.x = Math.max(0, Math.min(currentCamera.x, component.width - component.width / currentCamera.zoom));
+  currentCamera.y = Math.max(0, Math.min(currentCamera.y, component.height - component.height / currentCamera.zoom));
+
 }
 
 export function zoomCamera(factor: number) {
@@ -267,7 +278,7 @@ export function renderScene(
 
   if (ctx) {
     // Log the current camera position
-    console.log('Current Camera Position:', { x: currentCamera.x, y: currentCamera.y });
+    console.log('Camera Position:', { x: currentCamera.x, y: currentCamera.y });
 
     // Save the current transformation state
     ctx.save();
@@ -520,4 +531,13 @@ export function startAnimation(component: HTMLCanvasElement) {
     cancelAnimationFrame(animationId);
     animationId = requestAnimationFrame(animateParticles.bind(null, component));
   }
+}
+
+export async function loadEngineTypeImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  })
 }
